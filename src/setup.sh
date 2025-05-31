@@ -15,6 +15,7 @@
 workdir="/scratch/sjc78466/capstone"
 
 # Copying raw reads for three E. coli isolates & adapters used for sequencing run to capstone/work directory
+# Ideally do this on xfer node
 cp -r /work/binf8960/instructor_data/raw_fastq $workdir/data
 
 # Changing file permissions for raw data to be read-only so cannot be modified
