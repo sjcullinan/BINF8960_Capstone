@@ -19,3 +19,5 @@ cp -r /work/binf8960/instructor_data/raw_fastq $workdir/data
 
 # Changing file permissions for raw data to be read-only so cannot be modified
 chmod -w $workdir/data/raw_fastq/*.fastq*
+
+# check file permissions with $workdir/data/raw_fastq/*.fastq.gz ls -lh to ensure all files are read-only before proceeding
