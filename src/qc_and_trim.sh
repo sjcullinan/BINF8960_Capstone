@@ -43,7 +43,7 @@ for fwd in $workdir/data/raw_fastq/*_1.fastq.gz
 do
 	sample=$(basename $fwd _1.fastq.gz)
 
-	echo $TRIMMOMATIC PE $workdir/data/raw_fastq/${sample}_1.fastq.gz $workdir/data/raw_fastq/${sample}_2.fastq.gz  \
+	$TRIMMOMATIC PE $workdir/data/raw_fastq/${sample}_1.fastq.gz $workdir/data/raw_fastq/${sample}_2.fastq.gz  \
 	$workdir/data/trimmed_fastq/${sample}_1.paired.fastq.gz $workdir/data/trimmed_fastq/${sample}_1.unpaired.fastq.gz \
 	$workdir/data/trimmed_fastq/${sample}_2.paired.fastq.gz $workdir/data/trimmed_fastq/${sample}_2.unpaired.fastq.gz \
 	ILLUMINACLIP:$workdir/data/raw_fastq/NexteraPE-PE.fa:2:30:10:5:True SLIDINGWINDOW:4:20
