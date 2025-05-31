@@ -5,4 +5,62 @@ date: "2025-05-31"
 output: pdf_document
 ---
 
+# REMOVE INSTRUCTIONS FOR ASSIGNMENT BEFORE YOU SUBMIT; KEEPING THEM HERE FOR NOW FOR EASY REFERENCE
+### Report contents:
+- Overall description of project
+- Link to the public GitHub repo for your scripts
+    - Note: if you cannot connect your repo on the cluster to GitHub, you can instead copy the appropriate scripts to your /work folder on the cluster, then explain this in your report instead and indicate which folder is yours
+- Code to load in your summary table from step 3 and make two graphs:
+    - Line chart showing the number of reads for each sample at each step of raw, trimmed, and aligned. (That is, there should be a separate line for each of the three samples, connecting their raw, trimmed, and aligned values).
+    - Bar chart showing how many variants each of the samples ended up with
+- Your interpretation of the above graphs
 
+# Goal of the BINF 8960 Maymester 2025 Capstone Project
+The overall goal of the capstone project for this class is to have us, the students, apply the skills and concepts we have been learning about over the past few weeks. Specifically, __________
+
+# Link to public GitHub repository
+URL: https://github.com/sjcullinan/BINF8960_Capstone.git
+
+The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer as opposed to from the working directory I was working in on the teaching cluster as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Because of this, please find the absolute path to the directory for this capstone project with all the shell script files generated for this project below:
+/work/sjc78466/capstone/src
+
+The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
+
+```{r setup}
+# Loading packages needed for data visualization
+library(tidyverse)
+
+# Loading summary table generated from summary_stats.sh script
+sample = read.csv("C:/Users/Sitara/Desktop/E_coli_summ_stats.csv")
+sample
+
+```
+
+```{r line chart}
+# Line chart -- to be safe, do line for forward read, reserve read, and then total
+# Add code for axes and legend and custom palette
+sample_reads = ggplot(sample) +
+	aes(x=sample, y=read_count, group=sample) +
+    geom_line(linetype=sample) +
+    geom_jitter(color=sample) +
+    scale_linetype_manual(values=c("solid", "dashed", "dotted"))
+
+sample_reads 
+
+ggsave(sample_reads, "results/BINF8960_Capstone_sample_reads.svg", dpi=600)
+ggsave(sample_reads, "results/BINF8960_Capstone_sample_reads.jpg", dpi=600)
+```
+
+
+```{r bar chart}
+# Bar chart
+sample_variants = ggplot(data, aes(x=sample, y=variants))+
+    geom_bar() +
+    scale_fill_paletteer_d("pals::tol") +
+    theme_minimal()
+
+sample_variants
+
+ggsave(sample_variants, "results/BINF8960_Capstone_sample_variants.svg", dpi=600)
+ggsave(sample_variants, "results/BINF8960_Capstone_sample_variants.jpg", dpi=600)
+```
