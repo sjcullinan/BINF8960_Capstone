@@ -27,13 +27,16 @@ The URL to the public repository for this capstone project may be found below. H
 The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
 
 ```{r setup}
+# Commented out code for installing required packages if need to uncommment and do fresh install:
+# install.packages(c("tidyverse", "paletteer"))
+
 # Loading packages needed for data visualization
 library(tidyverse)
+library(paletteer)
 
 # Loading summary table generated from summary_stats.sh script
 sample = read.csv("C:/Users/Sitara/Desktop/E_coli_summ_stats.csv")
 sample
-
 ```
 
 ```{r line chart}
