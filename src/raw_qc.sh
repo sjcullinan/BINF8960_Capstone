@@ -2,7 +2,7 @@
 #SBATCH --partition=batch
 #SBATCH --job-name=capstone_raw_qc
 #SBATCH --ntasks=1
-#SBATCH --time=0:30:00
+#SBATCH --time=2:00:00
 #SBATCH --mem=2gb
 #SBATCH --output=/scratch/sjc78466/capstone/job_logs/log.%j
 
@@ -23,17 +23,23 @@ module load MultiQC/1.14-foss-2022a
 # Variable for absolute path again so don't need to keep typing it out
 workdir="/scratch/sjc78466/capstone"
 
+##################################################################
+###   MAKING OUTPUT DIRECTORY FOR FASTQC AND MULTIQC RESULTS   ###
+##################################################################
+
+mkdir $workdir/results/raw_fastqc
+mkdir $workdir/results/raw_multiqc
+
 #########################################################
 ###   RUNNING FASTQC ON RAW READS TO CHECK QUALITY   ###
 #########################################################
 
-
-
+fastqc -o $workdir/results/raw_fastqc $workdir/data/raw_fastq/*.fastq.gz
 
 ####################################################################
 ###   RUNNING MULTIQC TO COMPILE QC RESULTS INTO SINGLE REPORT   ###
 ####################################################################
 
-multiqc -o #$workdir/data/_____________ $workdir/_______________________
+multiqc -o $workdir/results/raw_multiqc $workdir/results/raw_fastqc
 
 # Moving MultiQC HTML file from cluster to local computer using FileZilla to visualize
