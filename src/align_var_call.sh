@@ -47,23 +47,23 @@ gunzip $workdir/data/genomes/ecoli_rel606.fna.gz # decompressing the genome file
 bwa index $workdir/data/genomes/ecoli_rel606.fna #calling BWA and telling it to index the unzipped E. coli genome
 
 # Loop over reads and do alignment and variant calling
-for fwd in $workdir/data/trimmed_fastq/*_1.fastq
+for fwd in $workdir/data/trimmed_fastq/*_1.paired.fastq.gz
 do
-	sample=$(basename $fwd _1.fastq)
+	sample=$(basename $fwd _1.paired.fastq.gz)
 
 	# Run alignment
-	echo "Aligning $sample"
-	rev="$workdir/data/trimmed_fastq/${sample}_2.paired.fastq"
-	bwa mem data/genomes/ecoli_rel606.fna $fwd $rev > results/sam/$sample.sam
+	echo "Aligning $sample" #echo here so we can keep tabs on progress of the program
+	rev="/scratch/sjc78466/capstone/data/trimmed_fastq/${sample}_2.paired.fastq.gz" #setting variable for the reverse read
+	bwa mem $workdir/data/genomes/ecoli_rel606.fna $fwd $rev > $workdir/results/sam/$sample.sam
 	#break
 
 	# Convert to BAM and sort
-	samtools view -S -b results/sam/$sample.sam > results/bam/$sample.bam
-	samtools sort -o results/bam/$sample.sorted.bam results/bam/$sample.bam
+	samtools view -S -b $workdir/results/sam/$sample.sam > $workdir/results/bam/$sample.bam
+	samtools sort -o $workdir/results/bam/$sample.sorted.bam $workdir/results/bam/$sample.bam
 
 	# Do variant calling
 	echo "Calling variants in $sample"
-	bcftools mpileup -O b -o results/bcf/$sample.bcf -f data/genomes/ecoli_rel606.fna results/bam/$sample.sorted.bam
-	bcftools call --ploidy 1 -m -v -o results/vcf/$sample.vcf results/bcf/$sample.bcf
+	bcftools mpileup -O b -o $workdir/results/bcf/$sample.bcf -f $workdir/data/genomes/ecoli_rel606.fna $workdir/results/bam/$sample.sorted.bam
+	bcftools call --ploidy 1 -m -v -o $workdir/results/vcf/$sample.vcf $workdir/results/bcf/$sample.bcf
 
 done
