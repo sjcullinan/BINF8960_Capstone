@@ -2,7 +2,7 @@
 #SBATCH --partition=batch
 #SBATCH --job-name=capstone_trim_and_qc
 #SBATCH --ntasks=1
-#SBATCH --time=8:00:00
+#SBATCH --time=1:00:00
 #SBATCH --mem=2gb
 #SBATCH --output=/scratch/sjc78466/capstone/job_logs/log.%j
 
@@ -26,7 +26,6 @@ workdir="/scratch/sjc78466/capstone"
 
 # Variable for running Trimmomatic program
 TRIMMOMATIC="java -jar /apps/eb/Trimmomatic/0.39-Java-13/trimmomatic-0.39.jar"
-
 #############################################################
 ###   MAKING DIRECTORIES NEEDED FOR JOB TO RUN PROPERLY   ###
 #############################################################
@@ -53,7 +52,7 @@ done
 ###   RUNNING FASTQC ON TRIMMED READS TO CHECK QUALITY   ###
 ############################################################
 
-fastqc -o $workdir/results/trimmed_fastqc $workdir/data/trimmed_fastq/*.fastq
+fastqc -o $workdir/results/trimmed_fastqc $workdir/data/trimmed_fastq/*.paired.fastq.gz
 
 ####################################################################
 ###   RUNNING MULTIQC TO COMPILE QC RESULTS INTO SINGLE REPORT   ###
