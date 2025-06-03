@@ -32,6 +32,9 @@ File transfers for this project were carried out via FileZilla. The code for doi
 - scp ______________ for MultiQC report on trimmed reads
 - scp ______________ for summary file
 
+# samtools view argument
+The argument we used for the samtools view program was -F 0x4, which was __________.
+
 ```{r setup}
 # Commented out code for installing required packages if need to uncommment and do fresh install:
 # install.packages(c("tidyverse", "paletteer"))
