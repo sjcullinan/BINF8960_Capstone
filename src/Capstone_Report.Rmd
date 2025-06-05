@@ -64,6 +64,13 @@ str(sample)
 reads = sample[,1:4]
 reads
 
+# Converting from "tidy" format to "long" format in preparation for line graph
+#
+#
+#
+#
+
+
 # Subset to obtain df with only the variant sites
 variants = sample[,c(1,5)]
 variants
@@ -71,14 +78,15 @@ variants
 ```
 
 ```{r line chart}
-# Line chart -- to be safe, do line for forward read, reserve read, and then total
 # Add code for axes and legend and custom palette
 # Need to plot three columns simultaneously -- look at https://stackoverflow.com/questions/4877357/how-to-plot-all-the-columns-of-a-data-frame-in-r
 
-ggplot(reads) +
-	aes(x=) +
-    geom_line(alpha=0.5) +
-    geom_jitter(alpha=0.3) +
+
+ggplot(reads,
+	aes(Sample)) +
+    geom_line(aes(y=Raw_Read_Counts, color="Raw_Read_Counts")) +
+    geom_line(aes(y=Trimmed_Read_Counts, color="Trimmed_Read_Counts")) +
+    geom_line(aes(y=Mapped_Read_Counts, color="Mapped_Read_Counts")) +
     scale_linetype_manual(values=c("solid", "dashed", "dotted"))
 
 #sample_reads 
