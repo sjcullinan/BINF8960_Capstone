@@ -6,74 +6,107 @@ output: pdf_document
 ---
 
 # REMOVE INSTRUCTIONS FOR ASSIGNMENT BEFORE YOU SUBMIT; KEEPING THEM HERE FOR NOW FOR EASY REFERENCE
+
 ### Report contents:
-- Overall description of project
-- Link to the public GitHub repo for your scripts
-    - Note: if you cannot connect your repo on the cluster to GitHub, you can instead copy the appropriate scripts to your /work folder on the cluster, then explain this in your report instead and indicate which folder is yours
-- Code to load in your summary table from step 3 and make two graphs:
-    - Line chart showing the number of reads for each sample at each step of raw, trimmed, and aligned. (That is, there should be a separate line for each of the three samples, connecting their raw, trimmed, and aligned values).
-    - Bar chart showing how many variants each of the samples ended up with
-- Your interpretation of the above graphs
+
+-   Overall description of project
+-   Link to the public GitHub repo for your scripts
+    -   Note: if you cannot connect your repo on the cluster to GitHub, you can instead copy the appropriate scripts to your /work folder on the cluster, then explain this in your report instead and indicate which folder is yours
+-   Code to load in your summary table from step 3 and make two graphs:
+    -   Line chart showing the number of reads for each sample at each step of raw, trimmed, and aligned. (That is, there should be a separate line for each of the three samples, connecting their raw, trimmed, and aligned values).
+    -   Bar chart showing how many variants each of the samples ended up with
+-   Your interpretation of the above graphs
 
 # Goal of the BINF 8960 Maymester 2025 Capstone Project
-The overall goal of the capstone project for this class is to have us, the students, apply the skills and concepts we have been learning about over the past few weeks. Specifically, __________
+
+The overall goal of the capstone project for this class is to have us, the students, apply the skills and concepts we have been learning about over the past few weeks. Specifically, \_\_\_\_\_\_\_\_\_\_
 
 # Link to public GitHub repository
-URL: https://github.com/sjcullinan/BINF8960_Capstone.git
 
-The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer as opposed to from the working directory I was working in on the teaching cluster as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Because of this, please find the absolute path to the directory for this capstone project with all the shell script files generated for this project below:
-/work/binf8960/sjc78466/capstone/src
+URL: <https://github.com/sjcullinan/BINF8960_Capstone.git>
+
+The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer as opposed to from the working directory I was working in on the teaching cluster as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Because of this, please find the absolute path to the directory for this capstone project with all the shell script files generated for this project below: /work/binf8960/sjc78466/capstone/src
 
 The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
 
-File transfers for this project were carried out via FileZilla. The code for doing so via the command line would have been the following:
-- cp -r /work/binf8960/instructor_data/raw_fastq  ______
-- scp ______________ for MultiQC report on raw reads
-- scp ______________ for MultiQC report on trimmed reads
-- scp ______________ for summary file
+File transfers for this project were carried out via FileZilla. The code for doing so via the command line would have been the following: - cp -r /work/binf8960/instructor_data/raw_fastq \_\_\_\_\_\_ - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for MultiQC report on raw reads - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for MultiQC report on trimmed reads - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for summary file
 
 # samtools view argument
-The argument we used for the samtools view program was -F 0x4, where -F is the short flag for excluding unmapped reads from the output, meaning we will only get back the reads that were successfully mapped to the reference genome.
-- Source: https://samformat.pages.dev/sam-format-flag 
+
+The argument we used for the samtools view program was -F 0x4, where -F is the short flag for excluding unmapped reads from the output, meaning we will only get back the reads that were successfully mapped to the reference genome. - Source: <https://samformat.pages.dev/sam-format-flag>
 
 ```{r setup}
 # Commented out code for installing required packages if need to uncommment and do fresh install:
-# install.packages(c("tidyverse", "paletteer"))
+# install.packages(c("tidyverse", "paletteer", "ggpattern", svglite"))
 
 # Loading packages needed for data visualization
 library(tidyverse)
 library(paletteer)
+library(ggpattern)
+#library(svglite)
 
 # Loading summary table generated from summary_stats.sh script
-sample = read.csv("C:/Users/Sitara/Desktop/E_coli_summ_stats.csv")
+sample = read.csv("../data/summary_stats.csv")
 sample
+
+#str(sample)
+
+# Brief data wrangling with dplyr
+sample = sample %>%
+ mutate(Mapped_Read_Counts = as.numeric(Mapped_Read_Counts),
+        Variant_Site_Counts = as.numeric(Variant_Site_Counts)
+        )
+
+str(sample)
+#summary(sample)
+
+# Subset to obtain df with only the read counts
+reads = sample[,1:4]
+reads
+
+# Subset to obtain df with only the variant sites
+variants = sample[,c(1,5)]
+variants
+
 ```
 
 ```{r line chart}
 # Line chart -- to be safe, do line for forward read, reserve read, and then total
 # Add code for axes and legend and custom palette
-sample_reads = ggplot(sample) +
-	aes(x=sample, y=read_count, group=sample) +
-    geom_line(linetype=sample) +
-    geom_jitter(color=sample) +
+# Need to plot three columns simultaneously -- look at https://stackoverflow.com/questions/4877357/how-to-plot-all-the-columns-of-a-data-frame-in-r
+
+ggplot(reads) +
+	aes(x=) +
+    geom_line(alpha=0.5) +
+    geom_jitter(alpha=0.3) +
     scale_linetype_manual(values=c("solid", "dashed", "dotted"))
 
-sample_reads 
+#sample_reads 
 
-ggsave(sample_reads, "results/BINF8960_Capstone_sample_reads.svg", dpi=600)
-ggsave(sample_reads, "results/BINF8960_Capstone_sample_reads.jpg", dpi=600)
+#ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.svg", dpi=600)
+#ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.jpg", dpi=600)
 ```
-
 
 ```{r bar chart}
 # Bar chart
-sample_variants = ggplot(data, aes(x=sample, y=variants))+
-    geom_bar() +
-    scale_fill_paletteer_d("pals::tol") +
-    theme_minimal()
+sample_variants = ggplot(variants,
+  aes(x=Sample, y=Variant_Site_Counts, fill=Sample)) +
+    geom_col() +
+    geom_text(aes(label=Variant_Site_Counts), vjust=-0.5) +
+    theme_minimal() +
+  paletteer::scale_fill_paletteer_d("nord::frost") +
+  geom_col_pattern(
+    aes(pattern=Sample,
+  ),
+color = "black") +
+#ylab="Total Variation Sites Relative to E. coli Reference Sequence" <- not working, figure out what is going wrong
+  # Add a title
+  #minor ticks
 
 sample_variants
 
-ggsave(sample_variants, "results/BINF8960_Capstone_sample_variants.svg", dpi=600)
-ggsave(sample_variants, "results/BINF8960_Capstone_sample_variants.jpg", dpi=600)
+#ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.svg", dpi=600) sissues with svglite
+ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.jpg", dpi=1200)
 ```
+
+# Figure Interpretations
