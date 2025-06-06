@@ -97,6 +97,6 @@ done
 paste -d "," $workdir/results/samples.txt $workdir/results/raw_read_counts.txt $workdir/results/trimmed_read_counts.txt $workdir/results/all_mapped_reads.txt $workdir/results/var_sites.txt > $workdir/results/summary_stats.csv
 
 # Manually adding headers in: Sample, Raw_Read_Counts, Trimmed_Read_Counts, Mapped_Read_Counts, Variant_Site_Counts
-echo "Sample, Raw_Read_Counts, Trimmed_Read_Counts, Mapped_Read_Counts, Variant_Site_Counts" > $workdir/results/headers.csv
+echo "Sample,Raw_Read_Counts,Trimmed_Read_Counts,Mapped_Read_Counts,Variant_Site_Counts" > $workdir/results/headers.csv
 cat $workdir/results/summary_stats.csv >> $workdir/results/headers.csv
 mv $workdir/results/headers.csv $workdir/results/summary_stats.csv
