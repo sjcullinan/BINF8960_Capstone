@@ -37,13 +37,15 @@ The argument we used for the samtools view program was -F 0x4, where -F is the s
 
 ```{r setup}
 # Commented out code for installing required packages if need to uncommment and do fresh install:
-# install.packages(c("tidyverse", "paletteer", "ggpattern", svglite"))
+# install.packages(c("tidyverse", "paletteer", "ggpattern", "ggtext", svglite"))
 
 # Loading packages needed for data visualization
 library(tidyverse)
 library(paletteer)
 library(ggpattern)
-#library(svglite)
+library(ggtext)
+#library(mdthemes) not available for my version of R, troubleshoot this because would be quite helpful!
+#library(svglite) ran into issues with this
 
 # Loading summary table generated from summary_stats.sh script
 sample = read.csv("../data/summary_stats.csv")
@@ -67,6 +69,17 @@ reads
 # Converting from "tidy" format to "long" format in preparation for line graph
 reads_long = pivot_longer(reads, cols = c("Raw_Read_Counts", "Trimmed_Read_Counts", "Mapped_Read_Counts"))
 
+#str(reads_long)
+
+reads_long = reads_long %>%
+  mutate(Sample = as.factor(Sample),
+         name = as.factor(name)
+         )
+str(reads_long)
+
+reads_long = reads_long %>%
+  mutate(name = fct_relevel(name, "Raw_Read_Counts", "Trimmed_Read_Counts", "Mapped_Read_Counts"))
+
 # Subset to obtain df with only the variant sites
 variants = sample[,c(1,5)]
 variants
@@ -76,35 +89,28 @@ variants
 ```{r line chart}
 # Add code for axes and legend and custom palette
 # Need to plot three columns simultaneously -- look at https://stackoverflow.com/questions/4877357/how-to-plot-all-the-columns-of-a-data-frame-in-r
-ggplot(reads_long,
+sample_reads = ggplot(reads_long,
        aes(x=name, y=value, group=Sample, color=Sample)) +
   geom_line(aes(linetype=Sample)) +
   geom_point(aes(shape=Sample)) +
-  theme_minimal()
+  geom_label(aes(label=value), vjust=-0.37, size=2.5, color="black") +
+  labs(title = "**Figure 1.** *E*. *coli* Isolate Raw, Trimmed, and Mapped Read Counts",
+     x = "Stage of Isolate Read Quality Control or Analysis",
+     y = "Number of Reads") +
+  theme_minimal() +
+  theme(plot.title = element_markdown(),
+        axis.text.x = element_text(angle=-45, vjust=-1.75),
+        text = element_text(family="serif"))
 
     #scale_linetype_manual(values=c("solid", "dashed", "dotted"))
+# establishing stages for updating x-axis tick labels
+stages = c("Raw Reads", "Trimmed Reads", "Mapped Reads")
 
-#sample_reads 
+sample_reads = sample_reads + scale_y_continuous(labels = scales::comma, limits=c(0,7000000)) +
+  scale_x_discrete(labels = stages)
 
 #ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.svg", dpi=600)
-ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.jpg", dpi=600)
-
-
-#ggplot(gapminder) +
-#  aes(x=gdpPercap, y=lifeExp) + # remove the color argument gives us all the data together, so we get a #single color for all data, and a single regression line
-#  geom_point(alpha=0.4) +
-#  scale_x_log10() +  # changing x-axis to be a log 10 scale; make figure more interpretable without #transforming the data and making interpretation difficulty or impossible
-#  geom_smooth(method = "lm") +
-#  theme(axis.text = element_text(size=15, 
-#                                 face="bold",
-#                                 color="blue"),
-#        axis.text.x = element_text(angle=90,     # can write element_blank()for axis.text.x to turn off #the x axis labels entirely; so use element_blank() as object value for anything you want turned off in #figure
-#                                   vjust=0.5),
-#        panel.background = element_rect(fill="white")) + # can use fill=NA to have it be transparent #instead of white
-#  labs(title = "Sample Plot",
-#       x = "GDP Per Capita",
-#       y = "Life Expectancy")
-
+ggsave(sample_reads, filename="../results/BINF8960Capstone_sample_reads_line.jpg", dpi=1200)
 
 ```
 
@@ -113,13 +119,20 @@ ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.jpg", dpi=600)
 sample_variants = ggplot(variants,
   aes(x=Sample, y=Variant_Site_Counts, fill=Sample)) +
     geom_col() +
-    geom_text(aes(label=Variant_Site_Counts), vjust=-0.5) +
+    geom_label(aes(label=Variant_Site_Counts), vjust=-0.25, size=3, color="black") +
     theme_minimal() +
+  ylim(0, 1000) +
   paletteer::scale_fill_paletteer_d("nord::frost") +
   geom_col_pattern(
     aes(pattern=Sample,
   ),
 color = "black") +
+    labs(title = "**Figure 2.** Variant Sites Detected in Genomes of Three *E*. *coli* Isolates <br> Relative to Reference *E*. *coli* B strain REL606",
+     x = "*E*. *coli* Sample Isolate SRR Accession Codes",
+     y = "Number of Variant Sites") +
+  theme(plot.title = element_markdown(hjust=0.5),
+        axis.title = element_markdown(),
+        text = element_text(family="serif"))
 #ylab="Total Variation Sites Relative to E. coli Reference Sequence" <- not working, figure out what is going wrong
   # Add a title
   #minor ticks
@@ -129,5 +142,7 @@ sample_variants
 #ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.svg", dpi=600) sissues with svglite
 ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.jpg", dpi=1200)
 ```
-
 # Figure Interpretations
+**Figure 1** depicts the number of reads corresponding to each sample isolate of *E. coli* that underwent quality control, alignment, and variant calling in this capstone project. The 
+
+**Figure 2** depicts the number of 
