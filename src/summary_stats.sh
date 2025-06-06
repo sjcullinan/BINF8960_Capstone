@@ -2,7 +2,7 @@
 #SBATCH --partition=batch
 #SBATCH --job-name=capstone_summary_stats
 #SBATCH --ntasks=1
-#SBATCH --time=8:00:00
+#SBATCH --time=2:00:00
 #SBATCH --mem=2gb
 #SBATCH --output=/scratch/sjc78466/capstone/job_logs/log.%j
 
@@ -89,11 +89,13 @@ sed -i -e "s/$var_count_9044/$true_var_count_9044/g" $workdir/results/var_sites.
 ###   OUTPUTTING SUMMARY STATISTICS TO A TIDY-FORMATTED *.CSV FILE   ###
 ########################################################################
 
+# echoing out each sample SRR accession number into a file to start off the first column of summary *.csv file
 for sample in SRR2584863 SRR2584866 SRR2589044
 do
 	echo $sample >> $workdir/results/samples.txt
 done
 
+#compiling all the data obtained above into the rest of the summary file so everything ends up in tidy format
 paste -d "," $workdir/results/samples.txt $workdir/results/raw_read_counts.txt $workdir/results/trimmed_read_counts.txt $workdir/results/all_mapped_reads.txt $workdir/results/var_sites.txt > $workdir/results/summary_stats.csv
 
 # Manually adding headers in: Sample, Raw_Read_Counts, Trimmed_Read_Counts, Mapped_Read_Counts, Variant_Site_Counts

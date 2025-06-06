@@ -2,7 +2,7 @@
 #SBATCH --partition=batch
 #SBATCH --job-name=capstone_setup
 #SBATCH --ntasks=1
-#SBATCH --time=0:30:00
+#SBATCH --time=0:10:00
 #SBATCH --mem=2gb
 #SBATCH --output=/scratch/sjc78466/capstone/log.%j
 
@@ -14,11 +14,7 @@
 # Variable for workdir on cluster b/c want to have absolute path in script out of an abundance of caution
 workdir="/scratch/sjc78466/capstone"
 
-# Copying raw reads for three E. coli isolates & adapters used for sequencing run to capstone/work directory
-# Ideally do this on xfer node
-cp -r /work/binf8960/instructor_data/raw_fastq $workdir/data
+# Copy raw reads for three E. coli isolates & adapters used for sequencing run from instructor_data to working directory with FileZilla
 
 # Changing file permissions for raw data to be read-only so cannot be modified
 chmod -w $workdir/data/raw_fastq/*.fastq*
-
-# check file permissions with $workdir/data/raw_fastq/*.fastq.gz ls -lh to ensure all files are read-only before proceeding
