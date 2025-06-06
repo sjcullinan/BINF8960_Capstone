@@ -17,8 +17,6 @@ URL: <https://github.com/sjcullinan/BINF8960_Capstone.git>
 
 The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Should this pose any issue, you may also find the absolute path to the directory with the shell scripts for this project on the teaching cluster here: /work/binf8960/sjc78466/capstone/src
 
-The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
-
 # File Transfer Methodology
 File transfers for this project were carried out via FileZilla due to relative ease of use.
 
