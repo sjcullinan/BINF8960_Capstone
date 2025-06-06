@@ -65,11 +65,7 @@ reads = sample[,1:4]
 reads
 
 # Converting from "tidy" format to "long" format in preparation for line graph
-#
-#
-#
-#
-
+reads_long = pivot_longer(reads, cols = c("Raw_Read_Counts", "Trimmed_Read_Counts", "Mapped_Read_Counts"))
 
 # Subset to obtain df with only the variant sites
 variants = sample[,c(1,5)]
@@ -80,19 +76,36 @@ variants
 ```{r line chart}
 # Add code for axes and legend and custom palette
 # Need to plot three columns simultaneously -- look at https://stackoverflow.com/questions/4877357/how-to-plot-all-the-columns-of-a-data-frame-in-r
+ggplot(reads_long,
+       aes(x=name, y=value, group=Sample, color=Sample)) +
+  geom_line(aes(linetype=Sample)) +
+  geom_point(aes(shape=Sample)) +
+  theme_minimal()
 
-
-ggplot(reads,
-	aes(Sample)) +
-    geom_line(aes(y=Raw_Read_Counts, color="Raw_Read_Counts")) +
-    geom_line(aes(y=Trimmed_Read_Counts, color="Trimmed_Read_Counts")) +
-    geom_line(aes(y=Mapped_Read_Counts, color="Mapped_Read_Counts")) +
-    scale_linetype_manual(values=c("solid", "dashed", "dotted"))
+    #scale_linetype_manual(values=c("solid", "dashed", "dotted"))
 
 #sample_reads 
 
 #ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.svg", dpi=600)
-#ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.jpg", dpi=600)
+ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.jpg", dpi=600)
+
+
+#ggplot(gapminder) +
+#  aes(x=gdpPercap, y=lifeExp) + # remove the color argument gives us all the data together, so we get a #single color for all data, and a single regression line
+#  geom_point(alpha=0.4) +
+#  scale_x_log10() +  # changing x-axis to be a log 10 scale; make figure more interpretable without #transforming the data and making interpretation difficulty or impossible
+#  geom_smooth(method = "lm") +
+#  theme(axis.text = element_text(size=15, 
+#                                 face="bold",
+#                                 color="blue"),
+#        axis.text.x = element_text(angle=90,     # can write element_blank()for axis.text.x to turn off #the x axis labels entirely; so use element_blank() as object value for anything you want turned off in #figure
+#                                   vjust=0.5),
+#        panel.background = element_rect(fill="white")) + # can use fill=NA to have it be transparent #instead of white
+#  labs(title = "Sample Plot",
+#       x = "GDP Per Capita",
+#       y = "Life Expectancy")
+
+
 ```
 
 ```{r bar chart}
