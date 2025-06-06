@@ -10,15 +10,31 @@ header-includes:
 
 # Goal of the BINF 8960 Maymester 2025 Capstone Project
 
-My impression of the overall goal of this capstone project is that it is meant to serve as an opportunity for the students of the course to both review the concepts and skills covered over the past few weeks and to apply some of the concepts to tasks that we may not have been directly exposed to during the course. For me, this project has helped me recall how to properly use certain useful programs, functions, and arguments for a given task, which has helped me gain more practice and better remember these components of the course. The project, particularly the development of the summary_stats.sh script and the plots, has also been valuable as an opportunity to start to move a bit beyond the course material and explore additional functions, packages, and arguments that will also be very useful to continue to gain familiarity with. 
+My impression of the overall goal of this capstone project is that it is meant to serve as an opportunity for the students of the course to both review the concepts and skills covered over the past few weeks and to apply some of the concepts to tasks that we may not have been directly exposed to during the course. For me, this project has helped me recall how to properly use certain programs, functions, and arguments for a given task, which has helped me gain more practice and better remember these components of the course. The project, particularly the development of the summary_stats.sh script and the plots, has also been valuable as an opportunity to start to move a bit beyond the course material and explore additional functions, packages, and arguments for manipulating, analyzing, and plotting data.
 
 # Access to Public GitHub Repository and to Scripts on Teaching Cluster
+The URL to the public repository for this capstone project may be found below.
+
 URL: <https://github.com/sjcullinan/BINF8960_Capstone.git>
 
-The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Should this pose any issue, you may also find the absolute path to the directory with the shell scripts for this project on the teaching cluster here: /work/binf8960/sjc78466/capstone/src
+However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. 
+
+Should this pose any issue, you may also find the absolute path to the directory with the shell scripts for this project on the teaching cluster here:
+/work/binf8960/sjc78466/capstone/src
+
+The script order is:
+
+1. setup.sh 
+2. raw_qc.sh 
+3. qc_and_trim.sh 
+4. align_var_call.sh 
+5. summary_stats.sh 
 
 # File Transfer Methodology
 File transfers for this project were carried out via FileZilla due to relative ease of use.
+
+# -F 0x4 Argument
+An explanation of my comprehension of what this argument does may be found within the **"Figure Interpretations"** section below.
 
 # Code for Loading in Data and Plotting Figures
 ```{r setup}
@@ -37,15 +53,16 @@ sample
 
 #str(sample)
 
-# Brief data wrangling 
+# Brief data wrangling
+# Converting all read count data that aren't already numeric objects into numeric objects using dplyr::mutate
 sample = sample %>%
  mutate(Mapped_Read_Counts = as.numeric(Mapped_Read_Counts),
         Variant_Site_Counts = as.numeric(Variant_Site_Counts)
         )
 
-str(sample)
+str(sample) # checking structure of data after mutate()
 
-# Subset to obtain df with only the read counts
+# Subset to obtain df with only the read counts for line graph
 reads = sample[,1:4]
 reads
 
@@ -54,6 +71,7 @@ reads_long = pivot_longer(reads, cols = c("Raw_Read_Counts", "Trimmed_Read_Count
 
 #str(reads_long)
 
+# Adjusting categorical variables to factor so can reorder them in the line graph since it plots them out of order by default
 reads_long = reads_long %>%
   mutate(Sample = as.factor(Sample),
          name = as.factor(name)
@@ -61,13 +79,13 @@ reads_long = reads_long %>%
 str(reads_long)
 
 reads_long = reads_long %>%
-  mutate(name = fct_relevel(name, "Raw_Read_Counts", "Trimmed_Read_Counts", "Mapped_Read_Counts"))
+  mutate(name = fct_relevel(name, "Raw_Read_Counts", "Trimmed_Read_Counts", "Mapped_Read_Counts")) # specifying order of our variables for plotting later
 
 # Subset to obtain df with only the variant sites
 variants = sample[,c(1,5)]
 variants
 
-# mutate sample to factor
+# mutate sample to factor for bar/column plot
 variants = variants %>%
   mutate(Sample = as.factor(Sample))
 
@@ -76,59 +94,62 @@ variants = variants %>%
 ```{r line chart}
 sample_reads = ggplot(reads_long,
        aes(x=name, y=value, group=Sample, color=Sample)) +
-  geom_line(aes(linetype=Sample)) +
-  geom_point(aes(shape=Sample)) +
-  geom_label(aes(label=value), vjust=-0.37, size=1.9, color="black") +
-  labs(title = "**Figure 1.** *E*. *coli* Isolate Raw, Trimmed, and Aligned Read Counts",
+  geom_line(aes(linetype=Sample)) + # different line types by sample to better distinguish
+  geom_point(aes(shape=Sample)) + # different point shapes by sample to better distinguish
+  geom_label(aes(label=value), vjust=-0.37, size=1.9, color="black") + # adding labels of data values so clearer for reader
+  labs(title = "**Figure 1.** *E*. *coli* Isolate Raw, Trimmed, and Aligned Read Counts", #specifying plot and axes titles
      x = "Stage of Isolate Read Quality Control or Analysis",
      y = "Number of Reads") +
   theme_minimal() +
-  theme(plot.title = element_markdown(),
-        axis.text.x = element_text(angle=-45, vjust=-1.75),
-        text = element_text(family="serif"))
+  theme(plot.title = element_markdown(), #using element_markdown() so can integrate in bold and italics into title more easily
+        axis.text.x = element_text(angle=-45, vjust=-1.75), # diagonal x axis tick labels so don't overlap
+        text = element_text(family="serif")) # serif instead of sans serif because it looks more professional
 
 # establishing stages for updating x-axis tick labels so everything plots in appropriate order
 stages = c("Raw Reads", "Trimmed Reads", "Aligned Reads")
 
+# making y-axis continuous instead of scientific notation, extending ylim upward, specifying x-axis variables in order to be plotted
 sample_reads = sample_reads + scale_y_continuous(labels = scales::comma, limits=c(0,7000000)) +
   scale_x_discrete(labels = stages)
 
-sample_reads
+sample_reads #echoing out so the plot appears in rendered document
 
-ggsave(sample_reads, filename="../results/BINF8960Capstone_sample_reads_line.jpg", dpi=1200)
+ggsave(sample_reads, filename="../results/BINF8960Capstone_sample_reads_line.jpg", dpi=1200) # saving the line plot
 
 ```
 
 ```{r bar chart}
 # Bar chart
 sample_variants = ggplot(variants,
-  aes(x=Sample, y=Variant_Site_Counts, fill=Sample)) +
-    geom_col() +
-    geom_label(aes(label=Variant_Site_Counts), vjust=-0.25, size=3, color="black") +
+  aes(x=Sample, y=Variant_Site_Counts, fill=Sample)) + 
+    geom_col() + #so don't need to do stat="identity" with geom_bar()
+    geom_label(aes(label=Variant_Site_Counts), vjust=-0.25, size=3, color="black") + # adding labels with variant site counts for clarity for reader
     theme_minimal() +
-  ylim(0, 1000) +
-  paletteer::scale_fill_paletteer_d("nord::frost") +
+  ylim(0, 1000) + #specifying ylim (moved upper bounds up a bit for some buffer room)
+  paletteer::scale_fill_paletteer_d("nord::frost") + # palette for coloring the bars
   geom_col_pattern(
-    aes(pattern=Sample,
+    aes(pattern=Sample, #having a different pattern per sample so easier to differentiate
   ),
 color = "black") +
     labs(title = "**Figure 2.** Variant Sites Detected in Genomes of Three *E*. *coli* Isolates <br> Relative to Reference *E*. *coli* B strain REL606",
      x = "*E*. *coli* Sample Isolate NCBI SRR Accession Codes",
      y = "Number of Variant Sites") +
-  theme(plot.title = element_markdown(hjust=0.5),
-        axis.title = element_markdown(),
-        text = element_text(family="serif"))
+  theme(plot.title = element_markdown(hjust=0.5), # element_markdown for formatting title text (bold and italics) more easily
+        axis.title = element_markdown(), # element_markdown for formatting x-axis text (italics) more easily
+        text = element_text(family="serif")) # serif font instead of sans-serif
 
-sample_variants
+sample_variants # echoing out the plot so will appear in rendered document
 
-ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.jpg", dpi=1200)
+ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.jpg", dpi=1200) # saving plot
 ```
 # Figure Interpretations
+Data loading, wrangling, and visualization were carried out using R Statistical Software v4.4.3.
+
 **Figure 1** depicts the number of reads corresponding to each sample isolate of *Escherichia* *coli* that underwent quality control, alignment, and variant calling in this capstone project. Toward the left of the figure, we see the number of raw reads, prior to trimming with Trimmomatic v0.39, each sample isolate had. These raw read counts were determined using FastQC v0.11.9, and FastQC reports were compiled for data export and convenient visualization using MultiQC v1.14. 
 
 We see that SRR2584866 had a relatively higher initial raw read count than the other two isolates. After the reads were trimmed with Trimmomatic to remove the adapter sequences remaining from library preparation and to remove low-quality reads (Q-score<20). As a consequence, we see that the number of reads that remained was relatively lower for all samples compared to their respective numbers of raw reads. Finally, toward the right of the figure, we see the number of trimmed reads from each sample that aligned to a reference sequence of *E*. *coli*, specifically the NCBI RefSeq assembly GCF_000017985.1 of *E*. *coli* B strain REL606 (https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000017985.1/). Genome alignment was carried out by indexing the reference sequence and subsequently aligning the trimmed sample sequences to the reference genome using BWA v0.7.18. This resulted in SAM files that were compressed and sorted into BAM and sorted BAM files using SAMtools v1.18. 
 
-The number of aligned reads was determined using samtools view from SAMtools v1.18 with the -F 0x4 argument. This argument specified that we wished to exclude unmapped reads from the output, thus yielding only reads that had successfully aligned to the reference genome. The -F stands for FLAG, which is a component of information about the alignment available in both SAM and BAM files. The FLAG field can take on various arguments, which each correspond to different information about the alignment. 0x4 specifically means "read unmapped." When the -F 0x4 argument is specified, this asks the program to exclude unmapped reads from the output that is returned to the user.
+The number of aligned reads was determined using samtools view from SAMtools v1.18 with the **-F 0x4** argument. This argument specified that we wished to exclude unmapped reads from the output, thus yielding only reads that had successfully aligned to the reference genome. The -F stands for FLAG, which is a component of information about the alignment available in both SAM and BAM files. The FLAG field can take on various arguments, which each correspond to different information about the alignment. 0x4 specifically means "read unmapped." When the -F 0x4 argument is specified, this asks the program to exclude unmapped reads from the output that is returned to the user.
 
 The figure shows a much greater number of aligned reads for each sample relative to the numbers of raw and trimmed reads. This outcome very well may be an artifact of user error on my part. In case it is not, however, the Sequence Alignment/Map Format Specification document by The SAM/BAM Format Specification Working Group (published on November 6, 2024) notes that "multiple mapping," wherein a single read may align to multiple regions of the reference genome, may occur in instances wherein the most accurate placement of a sample read may not be straightforward to determine. Should the greater number of aligned reads relative to trimmed and raw reads not be due to user error on my part, then multiple mapping may potentially be at least part of the reason as to why the aligned read counts are greater than the trimmed or raw read counts for all three samples.
 
@@ -140,3 +161,18 @@ The figure shows a much greater number of aligned reads for each sample relative
 * <https://genome.sph.umich.edu/wiki/SAM>
 * Li H, Handsaker B, Wysoker A, et al. The Sequence Alignment/Map format and SAMtools. *Bioinformatics*. 2009;25(16):2078-2079. <doi:10.1093/bioinformatics/btp352>
 * The SAM/BAM Format Specification Working Group. Sequence Alignment/Map Format Specification. 2024, Nov 6. <https://samtools.github.io/hts-specs/SAMv1.pdf> 
+
+### Software and Package Citations (R, RStudio, and R packages followed by software used on the cluster in the order presented in the "Figure Interpretations" section):
+* R Core Team (2025). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>
+* Posit team (2025). RStudio: Integrated Development Environment for R. Posit Software, PBC, Boston, MA. <https://www.posit.co/>
+* Wickham H, Averick M, Bryan J, et al. Welcome to the tidyverse. *Journal of Open Source Software*. 2019;4(43):1686. <doi:10.21105/joss.01686>
+* Hvitfeldt E. _paletteer: Comprehensive Collection of Color Palettes_. R package version 1.3.0. 2021. <https://github.com/EmilHvitfeldt/paletteer>
+* FC M, Davis TL, and ggplot2 authors. _ggpattern: 'ggplot2' Pattern Geoms_. R package version 1.1.4. 2025. <https://CRAN.R-project.org/package=ggpattern>
+* Wilke CO and Wiernik BM. _ggtext: Improved Text Rendering Support for 'ggplot2'_. R package version 0.1.2. 2022. <https://CRAN.R-project.org/package=ggtext>
+* Xie Y. _tinytex: Helper Functions to Install and Maintain TeX Live, and Compile LaTeX Documents_. R package version 0.57. 2025. <https://github.com/rstudio/tinytex>
+* Bolger AM, Lohse M, Usadel B. Trimmomatic: A flexible trimmer for Illumina Sequence Data. *Bioinformatics*. 2014;30(15):2114-2120. <doi:10.1093/bioinformatics/btu170>
+* Andrews, S. FastQC:  A Quality Control Tool for High Throughput Sequence Data [Online]. 2010. Available online at: <https://www.bioinformatics.babraham.ac.uk/projects/fastqc/>
+* Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016;32(19):3047-3048. <doi:10.1093/bioinformatics/btw354>
+* Li H, Durbin R. Fast and accurate short read alignment with Burrows-Wheeler transform. *Bioinformatics*. 2009;25(14):1754-1760. <doi:10.1093/bioinformatics/btp324>
+* Li H, Handsaker B, Wysoker A, et al. The Sequence Alignment/Map format and SAMtools. *Bioinformatics*. 2009;25(16):2078-2079. <doi:10.1093/bioinformatics/btp352>
+* Li H. A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. *Bioinformatics*. 2011;27(21):2987-2993. <doi:10.1093/bioinformatics/btr509>
