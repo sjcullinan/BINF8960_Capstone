@@ -3,49 +3,34 @@ title: "BINF8960 Capstone Report"
 author: "Sitara Cullinan"
 date: "2025-05-31"
 output: pdf_document
+header-includes:
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
 ---
-
-# REMOVE INSTRUCTIONS FOR ASSIGNMENT BEFORE YOU SUBMIT; KEEPING THEM HERE FOR NOW FOR EASY REFERENCE
-
-### Report contents:
-
--   Overall description of project
--   Link to the public GitHub repo for your scripts
-    -   Note: if you cannot connect your repo on the cluster to GitHub, you can instead copy the appropriate scripts to your /work folder on the cluster, then explain this in your report instead and indicate which folder is yours
--   Code to load in your summary table from step 3 and make two graphs:
-    -   Line chart showing the number of reads for each sample at each step of raw, trimmed, and aligned. (That is, there should be a separate line for each of the three samples, connecting their raw, trimmed, and aligned values).
-    -   Bar chart showing how many variants each of the samples ended up with
--   Your interpretation of the above graphs
 
 # Goal of the BINF 8960 Maymester 2025 Capstone Project
 
-The overall goal of the capstone project for this class is to have us, the students, apply the skills and concepts we have been learning about over the past few weeks. Specifically, \_\_\_\_\_\_\_\_\_\_
+My impression of the overall goal of this capstone project is that it is meant to serve as an opportunity for the students of the course to both review the concepts and skills covered over the past few weeks and to apply some of the concepts to tasks that we may not have been directly exposed to during the course. For me, this project has helped me recall how to properly use certain useful programs, functions, and arguments for a given task, which has helped me gain more practice and better remember these components of the course. The project, particularly the development of the summary_stats.sh script and the plots, has also been valuable as an opportunity to start to move a bit beyond the course material and explore additional functions, packages, and arguments that will also be very useful to continue to gain familiarity with. 
 
-# Link to public GitHub repository
-
+# Access to Public GitHub Repository and to Scripts on Teaching Cluster
 URL: <https://github.com/sjcullinan/BINF8960_Capstone.git>
 
-The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer as opposed to from the working directory I was working in on the teaching cluster as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Because of this, please find the absolute path to the directory for this capstone project with all the shell script files generated for this project below: /work/binf8960/sjc78466/capstone/src
+The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Should this pose an issue with grading, you may also find the absolute path to the directory for this capstone project with all the shell script files generated for this project below: /work/binf8960/sjc78466/capstone/src
 
 The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
 
-File transfers for this project were carried out via FileZilla. The code for doing so via the command line would have been the following: - cp -r /work/binf8960/instructor_data/raw_fastq \_\_\_\_\_\_ - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for MultiQC report on raw reads - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for MultiQC report on trimmed reads - scp \_\_\_\_\_\_\_\_\_\_\_\_\_\_ for summary file
-
-# samtools view argument
-
-The argument we used for the samtools view program was -F 0x4, where -F is the short flag for excluding unmapped reads from the output, meaning we will only get back the reads that were successfully mapped to the reference genome. - Source: <https://samformat.pages.dev/sam-format-flag>
+# File Transfer Methodology
+File transfers for this project were carried out via FileZilla due to relative ease of use.
 
 ```{r setup}
-# Commented out code for installing required packages if need to uncommment and do fresh install:
-# install.packages(c("tidyverse", "paletteer", "ggpattern", "ggtext", svglite"))
+# install.packages(c("tidyverse", "paletteer", "ggpattern", "ggtext", "tinytex"))
 
 # Loading packages needed for data visualization
 library(tidyverse)
 library(paletteer)
 library(ggpattern)
 library(ggtext)
-#library(mdthemes) not available for my version of R, troubleshoot this because would be quite helpful!
-#library(svglite) ran into issues with this
+library(tinytex)
 
 # Loading summary table generated from summary_stats.sh script
 sample = read.csv("../data/summary_stats.csv")
@@ -53,14 +38,13 @@ sample
 
 #str(sample)
 
-# Brief data wrangling with dplyr
+# Brief data wrangling 
 sample = sample %>%
  mutate(Mapped_Read_Counts = as.numeric(Mapped_Read_Counts),
         Variant_Site_Counts = as.numeric(Variant_Site_Counts)
         )
 
 str(sample)
-#summary(sample)
 
 # Subset to obtain df with only the read counts
 reads = sample[,1:4]
@@ -84,17 +68,19 @@ reads_long = reads_long %>%
 variants = sample[,c(1,5)]
 variants
 
+# mutate sample to factor
+variants = variants %>%
+  mutate(Sample = as.factor(Sample))
+
 ```
 
 ```{r line chart}
-# Add code for axes and legend and custom palette
-# Need to plot three columns simultaneously -- look at https://stackoverflow.com/questions/4877357/how-to-plot-all-the-columns-of-a-data-frame-in-r
 sample_reads = ggplot(reads_long,
        aes(x=name, y=value, group=Sample, color=Sample)) +
   geom_line(aes(linetype=Sample)) +
   geom_point(aes(shape=Sample)) +
-  geom_label(aes(label=value), vjust=-0.37, size=2.5, color="black") +
-  labs(title = "**Figure 1.** *E*. *coli* Isolate Raw, Trimmed, and Mapped Read Counts",
+  geom_label(aes(label=value), vjust=-0.37, size=1.9, color="black") +
+  labs(title = "**Figure 1.** *E*. *coli* Isolate Raw, Trimmed, and Aligned Read Counts",
      x = "Stage of Isolate Read Quality Control or Analysis",
      y = "Number of Reads") +
   theme_minimal() +
@@ -102,14 +88,14 @@ sample_reads = ggplot(reads_long,
         axis.text.x = element_text(angle=-45, vjust=-1.75),
         text = element_text(family="serif"))
 
-    #scale_linetype_manual(values=c("solid", "dashed", "dotted"))
-# establishing stages for updating x-axis tick labels
-stages = c("Raw Reads", "Trimmed Reads", "Mapped Reads")
+# establishing stages for updating x-axis tick labels so everything plots in appropriate order
+stages = c("Raw Reads", "Trimmed Reads", "Aligned Reads")
 
 sample_reads = sample_reads + scale_y_continuous(labels = scales::comma, limits=c(0,7000000)) +
   scale_x_discrete(labels = stages)
 
-#ggsave(sample_reads, "results/BINF8960Capstone_sample_reads_line.svg", dpi=600)
+sample_reads
+
 ggsave(sample_reads, filename="../results/BINF8960Capstone_sample_reads_line.jpg", dpi=1200)
 
 ```
@@ -133,16 +119,19 @@ color = "black") +
   theme(plot.title = element_markdown(hjust=0.5),
         axis.title = element_markdown(),
         text = element_text(family="serif"))
-#ylab="Total Variation Sites Relative to E. coli Reference Sequence" <- not working, figure out what is going wrong
-  # Add a title
-  #minor ticks
 
 sample_variants
 
-#ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.svg", dpi=600) sissues with svglite
 ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.jpg", dpi=1200)
 ```
 # Figure Interpretations
-**Figure 1** depicts the number of reads corresponding to each sample isolate of *E. coli* that underwent quality control, alignment, and variant calling in this capstone project. The 
+**Figure 1** depicts the number of reads corresponding to each sample isolate of *Escherichia* *coli* that underwent quality control, alignment, and variant calling in this capstone project. Toward the left of the figure, we see the number of raw reads, prior to trimming with Trimmomatic v0.39, each sample isolate had. These raw read counts were determined using FastQC v0.11.9, and FastQC reports were compiled for data export and convenient visualization using MultiQC v1.14. 
 
-**Figure 2** depicts the number of 
+We see that SRR2584866 had a relatively higher initial raw read count than the other two isolates. After the reads were trimmed with Trimmomatic to remove the adapter sequences remaining from library preparation and to remove low-quality reads (Q-score<20). As a consequence, we see that the number of reads that remained was relatively lower for all samples compared to their respective numbers of raw reads. Finally, toward the right of the figure, we see the number of trimmed reads from each sample that aligned to a reference sequence of *E*. *coli*, specifically the NCBI RefSeq assembly GCF_000017985.1 of *E*. *coli* B strain REL606 (https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000017985.1/). Genome alignment was carried out by indexing the reference sequence and subsequently aligning the trimmed sample sequences to the reference genome using BWA v0.7.18. This resulted in SAM files that were compressed and sorted into BAM and sorted BAM files using SAMtools v1.18. 
+
+The number of aligned reads was determined using samtools view from SAMtools v1.18 with the -F 0x4 argument. This argument specified that we wished to exclude unmapped reads from the output, thus yielding only reads that had successfully aligned to the reference genome. The -F is the short flag for excluding unmapped reads from the output, meaning we will only get back the reads that were successfully mapped to the reference genome.
+  Sources for learning about samtools view -F 0x4 argument: 
+  * <https://samformat.pages.dev/sam-format-flag>
+  
+
+**Figure 2** depicts the number of sites on the respective genomes of each sample isolate that had some variation from the reference genome. Indels, single-nucleotide polymorphisms, and ___ Variant calling was carried out using BCFtools v1.18.
