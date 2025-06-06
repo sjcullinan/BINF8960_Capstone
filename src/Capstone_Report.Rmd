@@ -15,13 +15,14 @@ My impression of the overall goal of this capstone project is that it is meant t
 # Access to Public GitHub Repository and to Scripts on Teaching Cluster
 URL: <https://github.com/sjcullinan/BINF8960_Capstone.git>
 
-The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Should this pose an issue with grading, you may also find the absolute path to the directory for this capstone project with all the shell script files generated for this project below: /work/binf8960/sjc78466/capstone/src
+The URL to the public repository for this capstone project may be found below. However, this project was initialized from my local computer, as opposed to from the working directory I was working in on the teaching cluster, as I kept facing errors trying to connect the repository I initialized on the teaching cluster to GitHub. Should this pose any issue, you may also find the absolute path to the directory with the shell scripts for this project on the teaching cluster here: /work/binf8960/sjc78466/capstone/src
 
 The data/ results/ and docs/ directories corresponding to this project may also be found alongside the src/ directory in /work/sjc78466/capstone
 
 # File Transfer Methodology
 File transfers for this project were carried out via FileZilla due to relative ease of use.
 
+# Code for Loading in Data and Plotting Figures
 ```{r setup}
 # install.packages(c("tidyverse", "paletteer", "ggpattern", "ggtext", "tinytex"))
 
@@ -114,7 +115,7 @@ sample_variants = ggplot(variants,
   ),
 color = "black") +
     labs(title = "**Figure 2.** Variant Sites Detected in Genomes of Three *E*. *coli* Isolates <br> Relative to Reference *E*. *coli* B strain REL606",
-     x = "*E*. *coli* Sample Isolate SRR Accession Codes",
+     x = "*E*. *coli* Sample Isolate NCBI SRR Accession Codes",
      y = "Number of Variant Sites") +
   theme(plot.title = element_markdown(hjust=0.5),
         axis.title = element_markdown(),
@@ -129,9 +130,15 @@ ggsave(sample_variants, filename="../results/BINF8960Capstone_variant_sites_bar.
 
 We see that SRR2584866 had a relatively higher initial raw read count than the other two isolates. After the reads were trimmed with Trimmomatic to remove the adapter sequences remaining from library preparation and to remove low-quality reads (Q-score<20). As a consequence, we see that the number of reads that remained was relatively lower for all samples compared to their respective numbers of raw reads. Finally, toward the right of the figure, we see the number of trimmed reads from each sample that aligned to a reference sequence of *E*. *coli*, specifically the NCBI RefSeq assembly GCF_000017985.1 of *E*. *coli* B strain REL606 (https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000017985.1/). Genome alignment was carried out by indexing the reference sequence and subsequently aligning the trimmed sample sequences to the reference genome using BWA v0.7.18. This resulted in SAM files that were compressed and sorted into BAM and sorted BAM files using SAMtools v1.18. 
 
-The number of aligned reads was determined using samtools view from SAMtools v1.18 with the -F 0x4 argument. This argument specified that we wished to exclude unmapped reads from the output, thus yielding only reads that had successfully aligned to the reference genome. The -F is the short flag for excluding unmapped reads from the output, meaning we will only get back the reads that were successfully mapped to the reference genome.
-  Sources for learning about samtools view -F 0x4 argument: 
-  * <https://samformat.pages.dev/sam-format-flag>
-  
+The number of aligned reads was determined using samtools view from SAMtools v1.18 with the -F 0x4 argument. This argument specified that we wished to exclude unmapped reads from the output, thus yielding only reads that had successfully aligned to the reference genome. The -F stands for FLAG, which is a component of information about the alignment available in both SAM and BAM files. The FLAG field can take on various arguments, which each correspond to different information about the alignment. 0x4 specifically means "read unmapped." When the -F 0x4 argument is specified, this asks the program to exclude unmapped reads from the output that is returned to the user.
 
-**Figure 2** depicts the number of sites on the respective genomes of each sample isolate that had some variation from the reference genome. Indels, single-nucleotide polymorphisms, and ___ Variant calling was carried out using BCFtools v1.18.
+The figure shows a much greater number of aligned reads for each sample relative to the numbers of raw and trimmed reads. This outcome very well may be an artifact of user error on my part. In case it is not, however, the Sequence Alignment/Map Format Specification document by The SAM/BAM Format Specification Working Group (published on November 6, 2024) notes that "multiple mapping," wherein a single read may align to multiple regions of the reference genome, may occur in instances wherein the most accurate placement of a sample read may not be straightforward to determine. Should the greater number of aligned reads relative to trimmed and raw reads not be due to user error on my part, then multiple mapping may potentially be at least part of the reason as to why the aligned read counts are greater than the trimmed or raw read counts for all three samples.
+
+**Figure 2** depicts the number of sites on the respective genomes of each sample isolate that had some variation from the reference genome, such as insertions, deletions, and single-nucleotide polymorphisms. Variant calling was carried out using BCFtools v1.18. We see that SRR2584863 and SRR2589044 have somewhat similar numbers of variation sites, 30 and 14, respectively. SRR2584866, on the other hand, had over 10 times as many differences in its genome relative to the reference genome, which may be partially explained by relatively greater number of reads this sample had relative to the other two samples, depicted in **Figure 1**. 
+
+### Sources for learning about -F 0x4 argument and multiple mapping:
+* <https://samformat.pages.dev/sam-format-flag>
+* <https://broadinstitute.github.io/picard/explain-flags.html>
+* <https://genome.sph.umich.edu/wiki/SAM>
+* Li H, Handsaker B, Wysoker A, et al. The Sequence Alignment/Map format and SAMtools. *Bioinformatics*. 2009;25(16):2078-2079. <doi:10.1093/bioinformatics/btp352>
+* The SAM/BAM Format Specification Working Group. Sequence Alignment/Map Format Specification. 2024, Nov 6. <https://samtools.github.io/hts-specs/SAMv1.pdf> 
